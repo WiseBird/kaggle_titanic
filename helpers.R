@@ -118,6 +118,19 @@ compare.approaches <- function(data, ..., n = 300) {
   scores
 }
 
+# http://topepo.github.io/caret/training.html
+# http://stats.stackexchange.com/questions/45569/what-is-the-cost-function-in-cv-glm-in-rs-boot-package
+# https://stat.ethz.ch/R-manual/R-devel/library/boot/html/cv.glm.html
+# http://machinelearningmastery.com/how-to-estimate-model-accuracy-in-r-using-the-caret-package/
+# http://pingax.com/logistic-regression-r-step-step-implementation-part-2/
+# http://stats.stackexchange.com/questions/103459/how-do-i-know-which-method-of-cross-validation-is-best
+# http://stats.stackexchange.com/questions/71184/cross-validation-or-bootstrapping-to-evaluate-classification-performance
+learning.curve <- function(Approach, data, testing) {
+  sapply(1:nrow(data), function(i) {
+    trainig <- data[i, ]
+    
+  })
+}
 
 
 create.submit <- function(Approach, titanic, file.name = "submit") {

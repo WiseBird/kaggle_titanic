@@ -6,7 +6,7 @@ library(caret) # install.packages("caret")
 library(ROCR) # install.packages("ROCR")
 library(dplyr) # install.packages("dplyr")
 
-setwd("C:\\Users\\sergey.sokolov\\Google Drive\\Tasks\\titanic")
+setwd("D:\\Reps\\gopath\\src\\github.com\\WiseBird\\kaggle_titanic")
 #setwd("C:\\Users\\пк\\Google Диск\\Tasks\\titanic")
 rm(list = ls())
 cat("\014") 
