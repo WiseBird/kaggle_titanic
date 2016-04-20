@@ -108,6 +108,24 @@ score.classifier <- function(split.res, Approach, details = F) {
   auc@y.values
 }
 
+cross.validate.rand <- function(data, ..., n = 300) {
+  sapply(list(...), function(Approach) {
+    unlist(replicate(n, score.classifier(split.test.train(data), Approach)))
+  })
+}
+cross.validate.k <- function(data, ..., k = 10) {
+  folds <- createFolds(data[[1]], k = k, list = TRUE, returnTrain = FALSE)
+  
+  sapply(list(...), function(Approach) {
+    unlist(sapply(names(folds), function(name) {
+      training <- data[unlist(folds[names(folds) != name]), ]
+      testing <- data[unlist(folds[name]), ]
+      
+      score.classifier(list(training = training, testing = testing), Approach)
+    }))
+  })
+}
+
 compare.approaches <- function(data, ..., n = 300) {
   scores <- sapply(list(...), function(Approach) {
     unlist(replicate(n, score.classifier(split.test.train(data), Approach)))

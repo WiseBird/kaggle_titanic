@@ -6,8 +6,8 @@ library(caret) # install.packages("caret")
 library(ROCR) # install.packages("ROCR")
 library(dplyr) # install.packages("dplyr")
 
-setwd("D:\\Reps\\gopath\\src\\github.com\\WiseBird\\kaggle_titanic")
-#setwd("C:\\Users\\пк\\Google Диск\\Tasks\\titanic")
+#setwd("D:\\Reps\\gopath\\src\\github.com\\WiseBird\\kaggle_titanic")
+setwd("C:\\Users\\sergey.sokolov\\Documents\\projects_\\kaggle_titanic")
 rm(list = ls())
 cat("\014") 
 
@@ -26,10 +26,12 @@ split.res <- split.test.train(titanic)
 
 # Analysing/testing -------------------------------------------------------
 
+scores <- cross.validate.rand(titanic, n = 50, 
+                              regression.simpliest,
+                              regression.by.sex)
+
 par(mfrow=c(1,1))
-scores <- compare.approaches(titanic, n = 50, 
-                   regression.fare.cut.manual.by.sex.and.fare.and.pclass.and.child,
-                   manual.by.sex.and.fare.and.pclass.and.child)
+boxplot(scores)
 
 scores = list(one = scores[,1], two = scores[,2])
 
