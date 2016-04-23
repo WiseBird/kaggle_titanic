@@ -58,7 +58,12 @@ approach.create <- function(train.func, predict.func, ..., details.func = NULL) 
     train.func = train.func,
     predict.func = predict.func,
     details.func = details.func,
+    
+    transform = function(df) {
+      transform <- prepareTransformers(df)
       
+      transform(df)
+    },
     predict = function(training, testing) {
       transform <- prepareTransformers(training)
       
@@ -99,7 +104,7 @@ score.classifier <- function(split.res, Approach, details = F) {
   predictions <- Approach$predict(split.res$training, split.res$testing)
   
   pred <- prediction(predictions, split.res$testing$Survived)
-  auc <- performance(pred,"auc");
+  auc <- performance(pred,"auc")
   
   if (details) {
     Approach$details(split.res$training)

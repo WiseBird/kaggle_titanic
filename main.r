@@ -5,9 +5,10 @@ library(pscl) # install.packages("pscl")
 library(caret) # install.packages("caret")
 library(ROCR) # install.packages("ROCR")
 library(dplyr) # install.packages("dplyr")
+library(pROC) # install.packages("pROC")
 
-#setwd("D:\\Reps\\gopath\\src\\github.com\\WiseBird\\kaggle_titanic")
-setwd("C:\\Users\\sergey.sokolov\\Documents\\projects_\\kaggle_titanic")
+setwd("D:\\Reps\\gopath\\src\\github.com\\WiseBird\\kaggle_titanic")
+#setwd("C:\\Users\\sergey.sokolov\\Documents\\projects_\\kaggle_titanic")
 rm(list = ls())
 cat("\014") 
 
@@ -23,12 +24,13 @@ source("approachs.manual.R")
 titanic <- read.titanic()
 split.res <- split.test.train(titanic)
 
-
 # Analysing/testing -------------------------------------------------------
 
 scores <- cross.validate.rand(titanic, n = 50, 
                               regression.simpliest,
                               regression.by.sex)
+mean(scores[,1])
+mean(scores[,2])
 
 par(mfrow=c(1,1))
 boxplot(scores)
