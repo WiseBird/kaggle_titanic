@@ -73,13 +73,14 @@ approach.create <- function(train.func, predict.func, ..., details.func = NULL) 
       model <- train.func(training)
       predict.func(model, testing, ...)
     },
-    details = function(training) {
+    details = function(training, testing=training) {
       transform <- prepareTransformers(training)
       
       training <- transform(training)
+      testing <- transform(testing)
       
       model <- train.func(training)
-      details.func(model)
+      details.func(model, testing)
     }
   )
 }
@@ -101,8 +102,6 @@ approach.create.from <- function(parent, ..., train.func = NULL, predict.func = 
 calc.auc <- function(split.res, Approach, draw.plot = F) {
   predictions <- Approach$predict(split.res$training, split.res$testing, type = "prob")
 
-  predictions$real <- split.res$testing$Survived
-
   roc <- roc(split.res$testing$Survived,
       predictions[,1])
   
@@ -114,6 +113,17 @@ calc.auc <- function(split.res, Approach, draw.plot = F) {
   }
   
   roc$auc
+}
+calc.log.regr.cost <- function(split.res, Approach) {
+  predictions <- Approach$predict(split.res$training, split.res$testing, type = "prob")
+  
+  # convert to integers 1 and 0
+  y <- as.integer(as.character(split.res$testing$Survived))
+  # doubles [0, 1]
+  probs <- predictions[,1]
+  
+  costs <- y * log(probs) + (1-y) * log(1 - probs)
+  -sum(costs)/length(y)
 }
 
 #cross.validate.rand <- function(data, ..., n = 50, stat = calc.auc) {
@@ -134,6 +144,23 @@ cross.validate.k <- function(data, ..., k = 10, stat = calc.auc) {
   })
 }
 
+
+
+compare.approaches <- function(scores) {
+  means = lapply(1:ncol(scores), function(i) { mean(scores[,i]) })
+  print(means)
+  
+  par(mfrow=c(1,1))
+  boxplot(scores)
+  
+  lapply(1:ncol(scores), function(i) { scores[,i] })
+  
+  par(mfrow=c(1, ncol(scores)))
+  lapply(1:ncol(scores), function(i) { hist(scores[,i]) })
+  
+  par(mfrow=c(1,1))
+}
+
 # http://topepo.github.io/caret/training.html
 # http://stats.stackexchange.com/questions/45569/what-is-the-cost-function-in-cv-glm-in-rs-boot-package
 # https://stat.ethz.ch/R-manual/R-devel/library/boot/html/cv.glm.html
@@ -152,7 +179,8 @@ learning.curve <- function(Approach, data, testing) {
 create.submit <- function(Approach, titanic, file.name = "submit") {
   test.final <- read.titanic("test.csv")
   predictions <- Approach$predict(titanic, test.final)
+  predictions <- as.integer(as.character(predictions))
   
-  submit <- data.frame(PassengerId = test.final$PassengerId, Survived = ifelse(predictions < 0.5, 0, 1))
+  submit <- data.frame(PassengerId = test.final$PassengerId, Survived = predictions)
   write.csv(submit, file = paste0(file.name, ".csv"), row.names = FALSE)
 }

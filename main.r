@@ -33,23 +33,18 @@ calc.auc(split.res, regression.simpliest, T)
 scores <- cross.validate.k(titanic, 
                               regression.simpliest,
                               regression.by.sex)
-mean(scores[,1])
-mean(scores[,2])
-
-par(mfrow=c(1,1))
-boxplot(scores)
-
-scores = list(one = scores[,1], two = scores[,2])
-
-par(mfrow=c(1,2))
-hist(scores[[1]])
-hist(scores[[2]])
-
-t.test(scores$one, scores$two)
+compare.approaches(scores)
 
 
-regression.simpliest$details(titanic)
-regression.fare.cut.manual.by.sex.and.fare.and.pclass.and.child$details(titanic)
+scores <- cross.validate.k(titanic, stat=calc.log.regr.cost,
+                           regression.simpliest,
+                           regression.by.sex)
+compare.approaches(scores)
+
+
+
+regression.simpliest$details(split.res$training, split.res$testing)
+regression.by.sex$details(split.res$training, split.res$testing)
 
 
 
@@ -58,32 +53,34 @@ regression.fare.cut.manual.by.sex.and.fare.and.pclass.and.child$details(titanic)
 
 # Completed approaches ----------------------------------------------------
 
-score.classifier(split.res, regression.simpliest) # 0.76077
-score.classifier(split.res, regression.age.sex)
-score.classifier(split.res, regression.age.sex.and.pclass)
-score.classifier(split.res, regression.flare.cut.auto)
-score.classifier(split.res, regression.by.sex) # 0.76555
-score.classifier(split.res, regression.by.sex.and.child) # 0.76555
-score.classifier(split.res, regression.by.sex.and.pclass) # 0.76555
-score.classifier(split.res, regression.by.sex.and.fare) # 0.76077
-score.classifier(split.res, regression.fare.cut.manual.by.sex.and.fare.and.pclass.and.child) # 0.76555
-score.classifier(split.res, manual.by.sex.and.fare.and.pclass.and.child) # 0.78469
-score.classifier(split.res, manual.age.cut.manual.by.sex.fare.pclass.age) # 0.77033
+score.approach <- calc.log.regr.cost
+
+score.approach(split.res, regression.simpliest)
+score.approach(split.res, regression.age.sex)
+score.approach(split.res, regression.age.sex.and.pclass)
+score.approach(split.res, regression.flare.cut.auto)
+score.approach(split.res, regression.by.sex)
+score.approach(split.res, regression.by.sex.and.child)
+score.approach(split.res, regression.by.sex.and.pclass)
+score.approach(split.res, regression.by.sex.and.fare)
+score.approach(split.res, regression.fare.cut.manual.by.sex.and.fare.and.pclass.and.child)
+#calc.auc(split.res, manual.by.sex.and.fare.and.pclass.and.child)
+#calc.auc(split.res, manual.age.cut.manual.by.sex.fare.pclass.age)
 
 
 
 
-create.submit(regression.simpliest, titanic, "regression.simpliest")
+create.submit(regression.simpliest, titanic, "regression.simpliest") # 0.76077
 create.submit(regression.age.sex, titanic, "regression.age.sex")
 create.submit(regression.age.sex.and.pclass, titanic, "regression.age.sex.and.pclass")
 create.submit(regression.flare.cut.auto, titanic, "regression.flare.cut.auto")
-create.submit(regression.by.sex, titanic, "regression.by.sex")
-create.submit(regression.by.sex.and.child, titanic, "regression.by.sex.and.child")
-create.submit(regression.by.sex.and.pclass, titanic, "regression.by.sex.and.pclass")
-create.submit(regression.by.sex.and.fare, titanic, "regression.by.sex.and.fare")
-create.submit(regression.fare.cut.manual.by.sex.and.fare.and.pclass.and.child, titanic, "regression.fare.cut.manual.by.sex.and.fare.and.pclass.and.child")
-create.submit(manual.by.sex.and.fare.and.pclass.and.child, titanic, "manual.by.sex.and.fare.and.pclass.and.child")
-create.submit(manual.age.cut.manual.by.sex.fare.pclass.age, titanic, "manual.age.cut.manual.by.sex.fare.pclass.age")
+create.submit(regression.by.sex, titanic, "regression.by.sex") # 0.76555
+create.submit(regression.by.sex.and.child, titanic, "regression.by.sex.and.child") # 0.76555
+create.submit(regression.by.sex.and.pclass, titanic, "regression.by.sex.and.pclass") # 0.76555
+create.submit(regression.by.sex.and.fare, titanic, "regression.by.sex.and.fare") # 0.76077
+create.submit(regression.fare.cut.manual.by.sex.and.fare.and.pclass.and.child, titanic, "regression.fare.cut.manual.by.sex.and.fare.and.pclass.and.child") # 0.76555
+#create.submit(manual.by.sex.and.fare.and.pclass.and.child, titanic, "manual.by.sex.and.fare.and.pclass.and.child") # 0.78469
+#create.submit(manual.age.cut.manual.by.sex.fare.pclass.age, titanic, "manual.age.cut.manual.by.sex.fare.pclass.age") # 0.77033
 
 
 # Trash -------------------------------------------------------------------

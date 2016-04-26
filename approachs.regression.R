@@ -10,9 +10,11 @@ regression.base <- approach.create.from(
   predict.func = function(model, testing, ...) {
     caret::predict.train(model, newdata = testing, ...)
   },
-  details.func = function(model) {
-    # getTrainPerf
-    print(summary(model))
+  details.func = function(model, testing) {
+    print(getTrainPerf(model))
+    
+    raw = caret::predict.train(model, newdata = testing, type = "raw")
+    print(confusionMatrix(raw, testing$Survived))
   })
 
 regression.simpliest <- approach.create.from(
