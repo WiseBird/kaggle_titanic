@@ -64,14 +64,14 @@ approach.create <- function(train.func, predict.func, ..., details.func = NULL) 
       
       transform(df)
     },
-    predict = function(training, testing) {
+    predict = function(training, testing, ...) {
       transform <- prepareTransformers(training)
       
       training <- transform(training)
       testing <- transform(testing)
       
       model <- train.func(training)
-      predict.func(model, testing)
+      predict.func(model, testing, ...)
     },
     details = function(training) {
       transform <- prepareTransformers(training)
@@ -98,47 +98,40 @@ approach.create.from <- function(parent, ..., train.func = NULL, predict.func = 
 
 
 
+calc.auc <- function(split.res, Approach, draw.plot = F) {
+  predictions <- Approach$predict(split.res$training, split.res$testing, type = "prob")
 
+  predictions$real <- split.res$testing$Survived
 
-score.classifier <- function(split.res, Approach, details = F) {
-  predictions <- Approach$predict(split.res$training, split.res$testing)
+  roc <- roc(split.res$testing$Survived,
+      predictions[,1])
   
-  pred <- prediction(predictions, split.res$testing$Survived)
-  auc <- performance(pred,"auc")
-  
-  if (details) {
-    Approach$details(split.res$training)
+  if(draw.plot) {
+    plot(roc, print.thres = c(.5), type = "S",
+         print.thres.pattern = "%.3f (Spec = %.2f, Sens = %.2f)",
+         print.thres.cex = .8,
+         legacy.axes = TRUE)
   }
   
-  auc@y.values
+  roc$auc
 }
 
-cross.validate.rand <- function(data, ..., n = 300) {
-  sapply(list(...), function(Approach) {
-    unlist(replicate(n, score.classifier(split.test.train(data), Approach)))
-  })
-}
-cross.validate.k <- function(data, ..., k = 10) {
+#cross.validate.rand <- function(data, ..., n = 50, stat = calc.auc) {
+#  sapply(list(...), function(Approach) {
+#    unlist(replicate(n, stat(split.test.train(data), Approach)))
+#  })
+#}
+cross.validate.k <- function(data, ..., k = 10, stat = calc.auc) {
   folds <- createFolds(data[[1]], k = k, list = TRUE, returnTrain = FALSE)
-  
+
   sapply(list(...), function(Approach) {
     unlist(sapply(names(folds), function(name) {
       training <- data[unlist(folds[names(folds) != name]), ]
       testing <- data[unlist(folds[name]), ]
       
-      score.classifier(list(training = training, testing = testing), Approach)
+      stat(list(training = training, testing = testing), Approach)
     }))
   })
-}
-
-compare.approaches <- function(data, ..., n = 300) {
-  scores <- sapply(list(...), function(Approach) {
-    unlist(replicate(n, score.classifier(split.test.train(data), Approach)))
-  })
-
-  boxplot(scores)
-  
-  scores
 }
 
 # http://topepo.github.io/caret/training.html

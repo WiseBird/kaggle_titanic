@@ -1,5 +1,4 @@
 train.regression <- function(formula, df) {
-  #glm(formula, data = df, family = "binomial")
   train(formula, data = df, method = "glm")
 }
 
@@ -8,12 +7,8 @@ regression.base <- approach.create.from(
   train.func = function(titanic) {
     train.regression(Survived ~ ., titanic)
   },
-  predict.func = function(model, testing) {
-    #predict(model, newdata = testing, type='response')
-    
-    #extractProb(model, testX = testing)
-    #predict(model, newdata = testing)
-    caret::predict.train(model, newdata = testing, type = "prob")[,1]
+  predict.func = function(model, testing, ...) {
+    caret::predict.train(model, newdata = testing, ...)
   },
   details.func = function(model) {
     # getTrainPerf
