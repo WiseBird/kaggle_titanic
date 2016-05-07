@@ -101,7 +101,7 @@ approach.create.from <- function(parent, ..., train.func = NULL, predict.func = 
 
 calc.auc <- function(split.res, Approach, draw.plot = F) {
   predictions <- Approach$predict(split.res$training, split.res$testing, type = "prob")
-
+  
   roc <- roc(split.res$testing$Survived,
       predictions[,1])
   
@@ -119,8 +119,9 @@ calc.log.regr.cost <- function(split.res, Approach) {
   
   # convert to integers 1 and 0
   y <- as.integer(as.character(split.res$testing$Survived))
+
   # doubles [0, 1]
-  probs <- predictions[,1]
+  probs <- predictions[,2]
   
   costs <- y * log(probs) + (1-y) * log(1 - probs)
   -sum(costs)/length(y)

@@ -8,8 +8,8 @@ library(dplyr) # install.packages("dplyr")
 library(pROC) # install.packages("pROC")
 library(e1071) # install.packages("e1071")
 
-#setwd("D:\\Reps\\gopath\\src\\github.com\\WiseBird\\kaggle_titanic")
-setwd("C:\\Users\\sergey.sokolov\\Documents\\projects_\\kaggle_titanic")
+setwd("D:\\Reps\\gopath\\src\\github.com\\WiseBird\\kaggle_titanic")
+#setwd("C:\\Users\\sergey.sokolov\\Documents\\projects_\\kaggle_titanic")
 rm(list = ls())
 cat("\014") 
 
@@ -28,11 +28,15 @@ split.res <- split.test.train(titanic)
 # Analysing/testing -------------------------------------------------------
 
 calc.auc(list(training = titanic, testing = titanic), regression.simpliest)
-calc.auc(split.res, regression.simpliest, T)
+calc.auc(split.res, regression.simpliest)
+calc.auc(split.res, manual.by.sex.and.fare.and.pclass.and.child)
+calc.auc(split.res, manual.age.cut.manual.by.sex.fare.pclass.age)
 
 scores <- cross.validate.k(titanic, 
                               regression.simpliest,
-                              regression.by.sex)
+                              regression.by.sex,
+                              manual.by.sex.and.fare.and.pclass.and.child,
+                              manual.age.cut.manual.by.sex.fare.pclass.age)
 compare.approaches(scores)
 
 
