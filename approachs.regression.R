@@ -3,18 +3,9 @@ train.regression <- function(formula, df) {
 }
 
 regression.base <- approach.create.from(
-  approach.base,
+  approach.caret.base,
   train.func = function(titanic) {
     train.regression(Survived ~ ., titanic)
-  },
-  predict.func = function(model, testing, ...) {
-    caret::predict.train(model, newdata = testing, ...)
-  },
-  details.func = function(model, testing) {
-    print(getTrainPerf(model))
-    
-    raw = caret::predict.train(model, newdata = testing, type = "raw")
-    print(confusionMatrix(raw, testing$Survived))
   })
 
 regression.simpliest <- approach.create.from(

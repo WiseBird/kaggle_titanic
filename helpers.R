@@ -151,10 +151,11 @@ compare.approaches <- function(scores) {
   means = lapply(1:ncol(scores), function(i) { mean(scores[,i]) })
   print(means)
   
-  par(mfrow=c(1,1))
-  boxplot(scores)
-  
-  lapply(1:ncol(scores), function(i) { scores[,i] })
+  plot.box <- ggplot()
+  for(i in 1:ncol(scores)) {
+    plot.box <- plot.box + geom_boxplot(aes_string(i, scores[,i]))
+  }
+  print(plot.box)
   
   par(mfrow=c(1, ncol(scores)))
   lapply(1:ncol(scores), function(i) { hist(scores[,i]) })
@@ -177,11 +178,14 @@ learning.curve <- function(Approach, data, testing) {
 }
 
 
-create.submit <- function(Approach, titanic, file.name = "submit") {
+create.submit <- function(titanic, approach.name) {
+  approach <- get(approach.name)
+  
   test.final <- read.titanic("test.csv")
-  predictions <- Approach$predict(titanic, test.final)
+  
+  predictions <- approach$predict(titanic, test.final)
   predictions <- as.integer(as.character(predictions))
   
   submit <- data.frame(PassengerId = test.final$PassengerId, Survived = predictions)
-  write.csv(submit, file = paste0(file.name, ".csv"), row.names = FALSE)
+  write.csv(submit, file = paste0(approach.name, ".csv"), row.names = FALSE)
 }

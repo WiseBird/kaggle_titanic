@@ -7,6 +7,7 @@ library(ROCR) # install.packages("ROCR")
 library(dplyr) # install.packages("dplyr")
 library(pROC) # install.packages("pROC")
 library(e1071) # install.packages("e1071")
+library(ggplot2) # install.packages("ggplot2")
 
 setwd("D:\\Reps\\gopath\\src\\github.com\\WiseBird\\kaggle_titanic")
 #setwd("C:\\Users\\sergey.sokolov\\Documents\\projects_\\kaggle_titanic")
@@ -18,6 +19,7 @@ source("processing.R")
 source("approachs.base.R")
 source("approachs.regression.R")
 source("approachs.manual.R")
+source("approachs.rpart.R")
 
 
 # Loading data ------------------------------------------------------------
@@ -27,22 +29,18 @@ split.res <- split.test.train(titanic)
 
 # Analysing/testing -------------------------------------------------------
 
-calc.auc(list(training = titanic, testing = titanic), regression.simpliest)
-calc.auc(split.res, regression.simpliest)
-calc.auc(split.res, manual.by.sex.and.fare.and.pclass.and.child)
-calc.auc(split.res, manual.age.cut.manual.by.sex.fare.pclass.age)
-
 scores <- cross.validate.k(titanic, 
-                              regression.simpliest,
-                              regression.by.sex,
-                              manual.by.sex.and.fare.and.pclass.and.child,
-                              manual.age.cut.manual.by.sex.fare.pclass.age)
+                           regression.simpliest,
+                           regression.by.sex,
+                           rpart.simpliest,
+                           rpart.by.sex.and.fare)
 compare.approaches(scores)
-
 
 scores <- cross.validate.k(titanic, stat=calc.log.regr.cost,
                            regression.simpliest,
-                           regression.by.sex)
+                           regression.by.sex,
+                           rpart.simpliest,
+                           rpart.by.sex.and.fare)
 compare.approaches(scores)
 
 
@@ -52,39 +50,61 @@ regression.by.sex$details(split.res$training, split.res$testing)
 
 
 
-# dummy
-
-
 # Completed approaches ----------------------------------------------------
 
-score.approach <- calc.log.regr.cost
+# small helper to simplify scoring
+score.approach <- function(approach) {
+  score <- cross.validate.k(titanic, 
+                            k = 3,
+                            #stat=calc.log.regr.cost,
+                            approach);
+  mean(score[[1]])
+}
 
-score.approach(split.res, regression.simpliest)
-score.approach(split.res, regression.age.sex)
-score.approach(split.res, regression.age.sex.and.pclass)
-score.approach(split.res, regression.flare.cut.auto)
-score.approach(split.res, regression.by.sex)
-score.approach(split.res, regression.by.sex.and.child)
-score.approach(split.res, regression.by.sex.and.pclass)
-score.approach(split.res, regression.by.sex.and.fare)
-score.approach(split.res, regression.fare.cut.manual.by.sex.and.fare.and.pclass.and.child)
-#calc.auc(split.res, manual.by.sex.and.fare.and.pclass.and.child)
-#calc.auc(split.res, manual.age.cut.manual.by.sex.fare.pclass.age)
+score.approach(regression.simpliest)
+score.approach(regression.age.sex)
+score.approach(regression.age.sex.and.pclass)
+#score.approach(regression.flare.cut.auto)
+score.approach(regression.by.sex)
+score.approach(regression.by.sex.and.child)
+score.approach(regression.by.sex.and.pclass)
+score.approach(regression.by.sex.and.fare)
+score.approach(regression.fare.cut.manual.by.sex.and.fare.and.pclass.and.child)
+
+score.approach(manual.by.sex.and.fare.and.pclass.and.child)
+score.approach(manual.age.cut.manual.by.sex.fare.pclass.age)
+
+score.approach(rpart.simpliest)
+score.approach(rpart.by.sex)
+score.approach(rpart.by.sex.and.child)
+score.approach(rpart.by.sex.and.pclass)
+score.approach(rpart.by.sex.and.fare)
+score.approach(rpart.age.na.sex)
+score.approach(rpart.age.na.sex.and.pclass)
 
 
 
+create.submit(titanic, "regression.simpliest") # 0.76077
+create.submit(titanic, "regression.age.sex")
+create.submit(titanic, "regression.age.sex.and.pclass")
+create.submit(titanic, "regression.flare.cut.auto")
+create.submit(titanic, "regression.by.sex") # 0.76555
+create.submit(titanic, "regression.by.sex.and.child") # 0.76555
+create.submit(titanic, "regression.by.sex.and.pclass") # 0.76555
+create.submit(titanic, "regression.by.sex.and.fare") # 0.76077
+create.submit(titanic, "regression.fare.cut.manual.by.sex.and.fare.and.pclass.and.child") # 0.76555
 
-create.submit(regression.simpliest, titanic, "regression.simpliest") # 0.76077
-create.submit(regression.age.sex, titanic, "regression.age.sex")
-create.submit(regression.age.sex.and.pclass, titanic, "regression.age.sex.and.pclass")
-create.submit(regression.flare.cut.auto, titanic, "regression.flare.cut.auto")
-create.submit(regression.by.sex, titanic, "regression.by.sex") # 0.76555
-create.submit(regression.by.sex.and.child, titanic, "regression.by.sex.and.child") # 0.76555
-create.submit(regression.by.sex.and.pclass, titanic, "regression.by.sex.and.pclass") # 0.76555
-create.submit(regression.by.sex.and.fare, titanic, "regression.by.sex.and.fare") # 0.76077
-create.submit(regression.fare.cut.manual.by.sex.and.fare.and.pclass.and.child, titanic, "regression.fare.cut.manual.by.sex.and.fare.and.pclass.and.child") # 0.76555
-#create.submit(manual.by.sex.and.fare.and.pclass.and.child, titanic, "manual.by.sex.and.fare.and.pclass.and.child") # 0.78469
-#create.submit(manual.age.cut.manual.by.sex.fare.pclass.age, titanic, "manual.age.cut.manual.by.sex.fare.pclass.age") # 0.77033
+create.submit(titanic, "manual.by.sex.and.fare.and.pclass.and.child") # 0.78469
+create.submit(titanic, "manual.age.cut.manual.by.sex.fare.pclass.age") # 0.77033
+
+create.submit(titanic, "rpart.simpliest") # 0.78469
+create.submit(titanic, "rpart.by.sex") # 0.76555
+create.submit(titanic, "rpart.by.sex.and.child") # 0.76555
+create.submit(titanic, "rpart.by.sex.and.pclass") # 0.76555
+create.submit(titanic, "rpart.by.sex.and.fare") # 0.77512
+create.submit(titanic, "rpart.age.na.sex") # 0.78469
+create.submit(titanic, "rpart.age.na.sex.and.pclass") # 0.78469
+
 
 
 # Trash -------------------------------------------------------------------
