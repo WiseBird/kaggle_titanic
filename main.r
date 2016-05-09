@@ -29,18 +29,23 @@ split.res <- split.test.train(titanic)
 
 # Analysing/testing -------------------------------------------------------
 
+regression.simpliest$details(split.res$training, split.res$testing)
+regression.by.sex$details(split.res$training, split.res$testing)
+rpart.simpliest$details(split.res$training, split.res$testing)
+rpart.by.sex$details(split.res$training, split.res$testing)
+
 scores <- cross.validate.k(titanic, 
                            regression.simpliest,
                            regression.by.sex,
                            rpart.simpliest,
-                           rpart.by.sex.and.fare)
+                           rpart.by.sex)
 compare.approaches(scores)
 
 scores <- cross.validate.k(titanic, stat=calc.log.regr.cost,
                            regression.simpliest,
                            regression.by.sex,
                            rpart.simpliest,
-                           rpart.by.sex.and.fare)
+                           rpart.by.sex)
 compare.approaches(scores)
 
 
@@ -58,7 +63,7 @@ score.approach <- function(approach) {
                             k = 3,
                             #stat=calc.log.regr.cost,
                             approach);
-  mean(score[[1]])
+  mean(score[, 1])
 }
 
 score.approach(regression.simpliest)
