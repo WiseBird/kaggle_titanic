@@ -6,6 +6,11 @@ rpart.base <- approach.create.from(
   approach.caret.base,
   train.func = function(titanic) {
     train.rpart(Survived ~ ., titanic)
+  },
+  details.func = function(model, testing) {
+    approach.caret.base$details.func(model, testing)
+    
+    fancyRpartPlot(model$finalModel)
   })
 
 rpart.simpliest <- approach.create.from(
