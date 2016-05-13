@@ -103,7 +103,7 @@ calc.auc <- function(split.res, Approach, draw.plot = F) {
   predictions <- Approach$predict(split.res$training, split.res$testing, type = "prob")
   
   roc <- roc(split.res$testing$Survived,
-      predictions[,1])
+      predictions[,2])
   
   if(draw.plot) {
     plot(roc, print.thres = c(.5), type = "S",
@@ -136,15 +136,14 @@ cross.validate.k <- function(data, ..., k = 10, stat = calc.auc) {
   folds <- createFolds(data[[1]], k = k, list = TRUE, returnTrain = FALSE)
 
   sapply(list(...), function(Approach) {
-    unlist(sapply(names(folds), function(name) {
+    sapply(names(folds), function(name) {
       training <- data[unlist(folds[names(folds) != name]), ]
       testing <- data[unlist(folds[name]), ]
       
       stat(list(training = training, testing = testing), Approach)
-    }))
+    })
   })
 }
-
 
 
 compare.approaches <- function(scores) {
@@ -162,6 +161,25 @@ compare.approaches <- function(scores) {
   
   par(mfrow=c(1,1))
 }
+plor.roc.curves <- function(split.res, ...) {
+  results <- data.frame(Class = split.res$testing$Survived)
+
+  approaches <- list(...)
+  for(ind in 1:length(approaches)) {
+    Approach <- approaches[[ind]]
+    
+    results[, c("a", "b", "c", "d")[ind]] <- Approach$predict(split.res$training, split.res$testing, type = "prob")[,1]
+  }
+  
+  print(head(results))
+  
+  trellis.par.set(caretTheme())
+  liftData <- lift(Class ~ a + b + c, data = results)
+  plot(liftData, values = 60, auto.key = list(columns = 3,
+                                              lines = TRUE,
+                                              points = FALSE))
+}
+
 
 # http://topepo.github.io/caret/training.html
 # http://stats.stackexchange.com/questions/45569/what-is-the-cost-function-in-cv-glm-in-rs-boot-package

@@ -37,6 +37,7 @@ regression.simpliest$details(split.res$training, split.res$testing)
 regression.by.sex$details(split.res$training, split.res$testing)
 rpart.simpliest$details(split.res$training, split.res$testing)
 rpart.by.sex$details(split.res$training, split.res$testing)
+rpart.age.cut$details(split.res$training, split.res$testing)
 
 scores <- cross.validate.k(titanic, 
                            regression.simpliest,
@@ -90,7 +91,7 @@ score.approach(rpart.by.sex.and.pclass)
 score.approach(rpart.by.sex.and.fare)
 score.approach(rpart.age.na.sex)
 score.approach(rpart.age.na.sex.and.pclass)
-
+score.approach(rpart.age.cut)
 
 
 create.submit(titanic, "regression.simpliest") # 0.76077
@@ -113,7 +114,7 @@ create.submit(titanic, "rpart.by.sex.and.pclass") # 0.76555
 create.submit(titanic, "rpart.by.sex.and.fare") # 0.77512
 create.submit(titanic, "rpart.age.na.sex") # 0.78469
 create.submit(titanic, "rpart.age.na.sex.and.pclass") # 0.78469
-
+create.submit(titanic, "rpart.age.cut") # 0.78469
 
 
 # Trash -------------------------------------------------------------------

@@ -54,3 +54,8 @@ rpart.age.na.sex.and.pclass <- approach.create.from(
   rpart.base,
   tf.remove.name,
   tf.na.age.mean.by.sex.and.pclass)
+
+
+rpart.age.cut <- approach.create.from(
+  rpart.simpliest,
+  tf.age.cut.manual)
