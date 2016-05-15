@@ -39,33 +39,27 @@ rpart.simpliest$details(split.res$training, split.res$testing)
 rpart.by.sex$details(split.res$training, split.res$testing)
 rpart.age.cut$details(split.res$training, split.res$testing)
 
-scores <- cv.k.folds(titanic, 
-                     regression.simpliest,
-                     regression.by.sex,
-                     rpart.simpliest,
-                     rpart.by.sex)
-compare.approaches(scores)
-
-scores <- cv.k.folds(titanic, stat=calc.kappa,
-                     regression.simpliest,
-                     regression.by.sex,
-                     rpart.simpliest,
-                     rpart.by.sex)
-compare.approaches(scores)
-
-scores <- cv.k.folds(titanic, stat=calc.accuracy,
-                     regression.simpliest,
-                     regression.by.sex,
-                     rpart.simpliest,
-                     rpart.by.sex)
-compare.approaches(scores)
-
-
-
-regression.simpliest$details(split.res$training, split.res$testing)
-regression.by.sex$details(split.res$training, split.res$testing)
-
-
+compare.approaches(titanic,
+                   cv.k.folds,
+                   stat=calc.auc,
+                   regression.simpliest,
+                   regression.by.sex,
+                   rpart.simpliest,
+                   rpart.by.sex)
+compare.approaches(titanic,
+                   cv.k.folds,
+                   stat=calc.kappa,
+                   regression.simpliest,
+                   regression.by.sex,
+                   rpart.simpliest,
+                   rpart.by.sex)
+compare.approaches(titanic,
+                   cv.k.folds,
+                   stat=calc.accuracy,
+                   regression.simpliest,
+                   regression.by.sex,
+                   rpart.simpliest,
+                   rpart.by.sex)
 
 # Completed approaches ----------------------------------------------------
 

@@ -170,7 +170,9 @@ cv.k.folds <- function(data, ..., k = 10, stat = calc.auc) {
 }
 
 
-compare.approaches <- function(scores, is.plot.box = T, is.plot.hist = F) {
+compare.approaches <- function(data, cv = cv.k.folds, ..., is.plot.box = T, is.plot.hist = F) {
+  scores <- cv(data, ...)
+  
   means = lapply(1:ncol(scores), function(i) { mean(scores[,i]) })
   print(means)
   
@@ -189,6 +191,7 @@ compare.approaches <- function(scores, is.plot.box = T, is.plot.hist = F) {
     par(mfrow=c(1,1))
   }
 }
+
 plor.roc.curves <- function(split.res, ...) {
   results <- data.frame(Class = split.res$testing$Survived)
   
