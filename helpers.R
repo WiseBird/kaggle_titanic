@@ -137,12 +137,26 @@ calc.log.regr.cost <- function(split.res, Approach) {
   -sum(costs)/length(y)
 }
 
-#cross.validate.rand <- function(data, ..., n = 50, stat = calc.auc) {
-#  sapply(list(...), function(Approach) {
-#    unlist(replicate(n, stat(split.test.train(data), Approach)))
-#  })
-#}
-cross.validate.k <- function(data, ..., k = 10, stat = calc.auc) {
+cv.leave.p.out <- function(data, ..., n = 50, p = 0.2, stat = calc.auc) {
+  sapply(list(...), function(Approach) {
+    unlist(replicate(n, stat(split.test.train(data, 1-p), Approach)))
+  })
+}
+cv.bootstrap <- function(data, ..., n = 50, stat = calc.auc) {
+  resamples <- createResample(data[[1]], times = n, list = TRUE)
+  sapply(list(...), function(Approach) {
+    sapply(1:length(resamples), function(ind) {
+      training.inds <- resamples[[1]]
+      testing.inds <- setdiff(1:nrow(data), training.inds[[1]])
+      
+      training <- data[training.inds, ]
+      testing <- data[testing.inds, ]
+      
+      stat(list(training = training, testing = testing), Approach)
+    })
+  })
+}
+cv.k.folds <- function(data, ..., k = 10, stat = calc.auc) {
   folds <- createFolds(data[[1]], k = k, list = TRUE, returnTrain = FALSE)
 
   sapply(list(...), function(Approach) {
