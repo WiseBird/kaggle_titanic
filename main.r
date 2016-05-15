@@ -46,7 +46,14 @@ scores <- cross.validate.k(titanic,
                            rpart.by.sex)
 compare.approaches(scores)
 
-scores <- cross.validate.k(titanic, stat=calc.log.regr.cost,
+scores <- cross.validate.k(titanic, stat=calc.kappa,
+                           regression.simpliest,
+                           regression.by.sex,
+                           rpart.simpliest,
+                           rpart.by.sex)
+compare.approaches(scores)
+
+scores <- cross.validate.k(titanic, stat=calc.accuracy,
                            regression.simpliest,
                            regression.by.sex,
                            rpart.simpliest,

@@ -114,6 +114,16 @@ calc.auc <- function(split.res, Approach, draw.plot = F) {
   
   roc$auc
 }
+calc.kappa <- function(split.res, Approach) {
+  raw = Approach$predict(split.res$training, split.res$testing, type = "raw")
+  cm <- confusionMatrix(raw, split.res$testing$Survived)
+  cm$overall["Kappa"]
+}
+calc.accuracy <- function(split.res, Approach) {
+  raw = Approach$predict(split.res$training, split.res$testing, type = "raw")
+  cm <- confusionMatrix(raw, split.res$testing$Survived)
+  cm$overall["Accuracy"]
+}
 calc.log.regr.cost <- function(split.res, Approach) {
   predictions <- Approach$predict(split.res$training, split.res$testing, type = "prob")
   
@@ -146,35 +156,42 @@ cross.validate.k <- function(data, ..., k = 10, stat = calc.auc) {
 }
 
 
-compare.approaches <- function(scores) {
+compare.approaches <- function(scores, is.plot.box = T, is.plot.hist = F) {
   means = lapply(1:ncol(scores), function(i) { mean(scores[,i]) })
   print(means)
   
-  plot.box <- ggplot()
-  for(i in 1:ncol(scores)) {
-    plot.box <- plot.box + geom_boxplot(aes_string(i, scores[,i]))
+  if(is.plot.box) {
+    plot.box <- ggplot()
+    for(i in 1:ncol(scores)) {
+      plot.box <- plot.box + geom_boxplot(aes_string(i, scores[,i]))
+    }
+    print(plot.box)
   }
-  print(plot.box)
   
-  par(mfrow=c(1, ncol(scores)))
-  lapply(1:ncol(scores), function(i) { hist(scores[,i]) })
-  
-  par(mfrow=c(1,1))
+  if(is.plot.hist) {
+    par(mfrow=c(1, ncol(scores)))
+    lapply(1:ncol(scores), function(i) { hist(scores[,i]) })
+    
+    par(mfrow=c(1,1))
+  }
 }
 plor.roc.curves <- function(split.res, ...) {
   results <- data.frame(Class = split.res$testing$Survived)
-
+  
   approaches <- list(...)
+  
+  names <- letters[1:length(approaches)]
+  
   for(ind in 1:length(approaches)) {
     Approach <- approaches[[ind]]
     
-    results[, c("a", "b", "c", "d")[ind]] <- Approach$predict(split.res$training, split.res$testing, type = "prob")[,1]
+    results[, names[ind]] <- Approach$predict(split.res$training, split.res$testing, type = "prob")[,1]
   }
   
   print(head(results))
   
   trellis.par.set(caretTheme())
-  liftData <- lift(Class ~ a + b + c, data = results)
+  liftData <- lift(reformulate(termlabels = names, response = 'Class'), data = results)
   plot(liftData, values = 60, auto.key = list(columns = 3,
                                               lines = TRUE,
                                               points = FALSE))
