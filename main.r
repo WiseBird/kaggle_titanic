@@ -25,7 +25,6 @@ source("approachs.regression.R")
 source("approachs.manual.R")
 source("approachs.rpart.R")
 
-
 # Loading data ------------------------------------------------------------
 
 titanic <- read.titanic()
@@ -35,9 +34,12 @@ split.res <- split.test.train(titanic)
 
 regression.simpliest$details(split.res$training, split.res$testing)
 regression.by.sex$details(split.res$training, split.res$testing)
+regression.by.sex.and.pclass$details(split.res$training, split.res$testing)
+
 rpart.simpliest$details(split.res$training, split.res$testing)
 rpart.by.sex$details(split.res$training, split.res$testing)
 rpart.age.cut$details(split.res$training, split.res$testing)
+rpart.overfitted$details(split.res$training, split.res$testing)
 
 compare.approaches(titanic,
                    cv.k.folds,

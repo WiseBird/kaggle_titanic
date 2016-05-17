@@ -59,3 +59,17 @@ rpart.age.na.sex.and.pclass <- approach.create.from(
 rpart.age.cut <- approach.create.from(
   rpart.simpliest,
   tf.age.cut.manual)
+
+train.rpart <- function(formula, df) {
+  
+}
+
+rpart.overfitted <- approach.create.from(
+  rpart.base,
+  tf.remove.name,
+  tf.na.age.mean,
+  train.func = function(titanic) {
+    grid <-  expand.grid(cp=0)
+    
+    train(Survived ~ ., titanic, method = "rpart", tuneGrid = grid)#, maxdepth=8)
+  })

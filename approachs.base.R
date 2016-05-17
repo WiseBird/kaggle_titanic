@@ -13,8 +13,8 @@ approach.caret.base <- approach.create.from(
     caret::predict.train(model, newdata = testing, ...)
   },
   details.func = function(model, testing) {
-    print(getTrainPerf(model))
-    
     raw = caret::predict.train(model, newdata = testing, type = "raw")
     print(confusionMatrix(raw, testing$Survived))
+    
+    print(varImp(model))
   })
