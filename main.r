@@ -12,6 +12,7 @@ library(rpart) # install.packages('rpart')
 library(rattle) # install.packages('rattle')
 library(rpart.plot) # install.packages('rpart.plot')
 library(RColorBrewer) # install.packages('RColorBrewer')
+library(C50) # install.packages('C50')
 
 setwd("D:\\Reps\\gopath\\src\\github.com\\WiseBird\\kaggle_titanic")
 #setwd("C:\\Users\\sergey.sokolov\\Documents\\projects_\\kaggle_titanic")
@@ -24,6 +25,7 @@ source("approachs.base.R")
 source("approachs.regression.R")
 source("approachs.manual.R")
 source("approachs.rpart.R")
+source("approachs.c50.R")
 
 # Loading data ------------------------------------------------------------
 
@@ -38,16 +40,12 @@ regression.by.sex.and.pclass$details(split.res$training, split.res$testing)
 
 rpart.simpliest$details(split.res$training, split.res$testing)
 rpart.by.sex$details(split.res$training, split.res$testing)
-rpart.age.cut$details(split.res$training, split.res$testing)
 rpart.overfitted$details(split.res$training, split.res$testing)
 
-compare.approaches(titanic,
-                   cv.k.folds,
-                   stat=calc.auc,
-                   regression.simpliest,
-                   regression.by.sex,
-                   rpart.simpliest,
-                   rpart.by.sex)
+c50.simpliest$details(split.res$training, split.res$testing)
+c50.by.sex.pclass.fare.age$details(split.res$training, split.res$testing)
+c50.by.sex.pclass.fare.age.embarked$details(split.res$training, split.res$testing)
+
 compare.approaches(titanic,
                    cv.k.folds,
                    stat=calc.kappa,
@@ -55,13 +53,14 @@ compare.approaches(titanic,
                    regression.by.sex,
                    rpart.simpliest,
                    rpart.by.sex)
+
+
 compare.approaches(titanic,
                    cv.k.folds,
-                   stat=calc.accuracy,
-                   regression.simpliest,
-                   regression.by.sex,
-                   rpart.simpliest,
-                   rpart.by.sex)
+                   stat=calc.kappa,
+                   c50.simpliest,
+                   c50.by.sex.pclass.fare.age,
+                   c50.by.sex.pclass.fare.age.embarked)
 
 # Completed approaches ----------------------------------------------------
 
@@ -119,6 +118,12 @@ create.submit(titanic, "rpart.age.na.sex") # 0.78469
 create.submit(titanic, "rpart.age.na.sex.and.pclass") # 0.78469
 create.submit(titanic, "rpart.age.cut") # 0.78469
 
+create.submit(titanic, "c50.simpliest") # 0.78469
+create.submit(titanic, "c50.by.sex") # 0.76555
+create.submit(titanic, "c50.by.sex.and.fare") # 0.76555
+create.submit(titanic, "c50.by.sex.and.pclass") # 0.76555
+create.submit(titanic, "c50.by.sex.pclass.fare.age") # 0.77512
+create.submit(titanic, "c50.by.sex.pclass.fare.age.embarked") # 0.77512
 
 # Trash -------------------------------------------------------------------
 

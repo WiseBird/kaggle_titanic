@@ -60,9 +60,7 @@ rpart.age.cut <- approach.create.from(
   rpart.simpliest,
   tf.age.cut.manual)
 
-train.rpart <- function(formula, df) {
-  
-}
+
 
 rpart.overfitted <- approach.create.from(
   rpart.base,
