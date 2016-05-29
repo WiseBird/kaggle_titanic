@@ -61,3 +61,20 @@ regression.fare.cut.manual.by.sex.and.fare.and.pclass.and.child <- approach.crea
     train.regression(Survived ~ Sex + Fare + Pclass + Child, titanic)
   })
 
+
+regression.add.title <- approach.create.from(
+  regression.base,
+  tf.add.title,
+  tf.remove.name,
+  tf.na.age.mean)
+regression.add.familySize <- approach.create.from(
+  regression.base,
+  tf.add.familySize,
+  tf.remove.name,
+  tf.na.age.mean)
+regression.add.title.familySize <- approach.create.from(
+  regression.base,
+  tf.add.title,
+  tf.add.familySize,
+  tf.remove.name,
+  tf.na.age.mean)

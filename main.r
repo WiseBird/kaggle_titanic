@@ -1,21 +1,17 @@
 # intializing environment -------------------------------------------------
 
 # http://datascienceplus.com/perform-logistic-regression-in-r/
-library(pscl) # install.packages("pscl")
-library(caret) # install.packages("caret")
-library(ROCR) # install.packages("ROCR")
-library(dplyr) # install.packages("dplyr")
-library(pROC) # install.packages("pROC")
-library(e1071) # install.packages("e1071")
-library(ggplot2) # install.packages("ggplot2")
-library(rpart) # install.packages('rpart')
-library(rattle) # install.packages('rattle')
-library(rpart.plot) # install.packages('rpart.plot')
-library(RColorBrewer) # install.packages('RColorBrewer')
-library(C50) # install.packages('C50')
+library(caret) # install.packages("caret", dependencies = TRUE)
+library(pscl) # install.packages("pscl", dependencies = TRUE)
+library(ROCR) # install.packages("ROCR", dependencies = TRUE)
+library(plyr)
+library(dplyr) # install.packages("dplyr", dependencies = TRUE)
+library(rattle) # install.packages("rattle", dependencies = TRUE)
+library(C50) # install.packages("C50", dependencies = TRUE)
 
-setwd("D:\\Reps\\gopath\\src\\github.com\\WiseBird\\kaggle_titanic")
+#setwd("D:\\Reps\\gopath\\src\\github.com\\WiseBird\\kaggle_titanic")
 #setwd("C:\\Users\\sergey.sokolov\\Documents\\projects_\\kaggle_titanic")
+setwd("D:\\repositories\\ExternalCode\\src\\github.com\\WiseBird\\kaggle_titanic")
 rm(list = ls())
 cat("\014") 
 
@@ -26,6 +22,7 @@ source("approachs.regression.R")
 source("approachs.manual.R")
 source("approachs.rpart.R")
 source("approachs.c50.R")
+source("approachs.cforest.R")
 
 # Loading data ------------------------------------------------------------
 
@@ -50,17 +47,25 @@ compare.approaches(titanic,
                    cv.k.folds,
                    stat=calc.kappa,
                    regression.simpliest,
-                   regression.by.sex,
-                   rpart.simpliest,
-                   rpart.by.sex)
-
+                   regression.add.title,
+                   regression.add.familySize,
+                   regression.add.title.familySize)
 
 compare.approaches(titanic,
                    cv.k.folds,
                    stat=calc.kappa,
-                   c50.simpliest,
-                   c50.by.sex.pclass.fare.age,
-                   c50.by.sex.pclass.fare.age.embarked)
+                   rpart.add.title,
+                   rpart.add.title.familySize,
+                   cforest.add.title,
+                   cforest.add.title.familySize)
+
+compare.approaches(titanic,
+                   cv.k.folds,
+                   stat=calc.kappa,
+                   regression.add.title,
+                   rpart.add.title,
+                   c50.add.title)
+
 
 # Completed approaches ----------------------------------------------------
 
@@ -105,6 +110,7 @@ create.submit(titanic, "regression.by.sex.and.child") # 0.76555
 create.submit(titanic, "regression.by.sex.and.pclass") # 0.76555
 create.submit(titanic, "regression.by.sex.and.fare") # 0.76077
 create.submit(titanic, "regression.fare.cut.manual.by.sex.and.fare.and.pclass.and.child") # 0.76555
+create.submit(titanic, "regression.add.title") # 0.77512
 
 create.submit(titanic, "manual.by.sex.and.fare.and.pclass.and.child") # 0.78469
 create.submit(titanic, "manual.age.cut.manual.by.sex.fare.pclass.age") # 0.77033
@@ -117,6 +123,8 @@ create.submit(titanic, "rpart.by.sex.and.fare") # 0.77512
 create.submit(titanic, "rpart.age.na.sex") # 0.78469
 create.submit(titanic, "rpart.age.na.sex.and.pclass") # 0.78469
 create.submit(titanic, "rpart.age.cut") # 0.78469
+create.submit(titanic, "rpart.add.title") # 0.78947
+create.submit(titanic, "rpart.add.title.familySize") # 0.77990
 
 create.submit(titanic, "c50.simpliest") # 0.78469
 create.submit(titanic, "c50.by.sex") # 0.76555
@@ -124,45 +132,19 @@ create.submit(titanic, "c50.by.sex.and.fare") # 0.76555
 create.submit(titanic, "c50.by.sex.and.pclass") # 0.76555
 create.submit(titanic, "c50.by.sex.pclass.fare.age") # 0.77512
 create.submit(titanic, "c50.by.sex.pclass.fare.age.embarked") # 0.77512
+create.submit(titanic, "c50.add.title") # 0.75120
 
-# Trash -------------------------------------------------------------------
-
-titanic$Title <- sapply(titanic$Name, FUN=function(x) {strsplit(x, split = "[,.]")[[1]][2]})
-titanic$Title <- sub(' ', '', titanic$Title)
-titanic$Title[titanic$Title %in% c('Mme', 'Mlle')] <- 'Mlle'
-titanic$Title[titanic$Title %in% c('Capt', 'Don', 'Major', 'Sir')] <- 'Sir'
-titanic$Title[titanic$Title %in% c('Dona', 'Lady', 'the Countess', 'Jonkheer')] <- 'Lady'
-titanic$Title[titanic$Title %in% c('Col', 'Lady', 'Dr', 'Jonkheer', 'Master', 'Mlle', 'Ms', 'Rev', "Sir")] <- 'High'
-titanic$Title <- factor(titanic$Title)
-table(titanic$Title)
-
-titanic$Name <- NULL
-
-
-#mean(unlist(replicate(300, calculate_auc())))
-
-
-# analysis
-
-aggregate(Survived ~ Sex, data = titanic, FUN = function(x) { sum(x == 1)/length(x) })
-
-titanic$Child <- factor("Adult", levels = c("Child", "Adult"))
-titanic$Child[titanic$Age < 18] <- "Child"
-aggregate(Survived ~ Child + Sex, data = titanic, FUN = function(x) { sum(x == 1)/length(x) })
-# nothing interesting
-
-mean(unlist(replicate(300, calculate_auc())))
-
-titanic$FamilySize <- titanic$SibSp + titanic$Parch + 1
-titanic$SibSp <- NULL
-titanic$Parch <- NULL
-
-mean(unlist(replicate(300, calculate_auc())))
-
-aggregate(Survived ~ Fare + Pclass  + Sex, data = titanic, FUN = function(x) { sum(x == 1)/length(x) })
-# Fare - 30+, Pclass - 3. Very low rate.
+create.submit(titanic, "cforest.add.title.familySize") # 0.79904
+create.submit(titanic, "cforest.add.title") # 0.77990
 
 
 
-#anova(model, model2, test="Chisq")
-#titanic$CabinLevel <- factor(substring(titanic$Cabin, 1, 1))
+
+
+
+
+
+
+
+
+

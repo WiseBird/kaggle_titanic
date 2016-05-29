@@ -44,3 +44,10 @@ c50.by.sex.pclass.fare.age.embarked <- approach.create.from(
   train.func = function(titanic) {
     train.c50(Survived ~ Sex + Pclass + Fare + Age + Embarked, titanic)
   })
+
+
+c50.add.title <- approach.create.from(
+  c50.base,
+  tf.add.title,
+  tf.remove.name,
+  tf.na.age.mean)

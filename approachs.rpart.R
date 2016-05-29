@@ -71,3 +71,21 @@ rpart.overfitted <- approach.create.from(
     
     train(Survived ~ ., titanic, method = "rpart", tuneGrid = grid)#, maxdepth=8)
   })
+
+
+rpart.add.title <- approach.create.from(
+  rpart.base,
+  tf.add.title,
+  tf.remove.name,
+  tf.na.age.mean)
+rpart.add.familySize <- approach.create.from(
+  rpart.base,
+  tf.add.familySize,
+  tf.remove.name,
+  tf.na.age.mean)
+rpart.add.title.familySize <- approach.create.from(
+  rpart.base,
+  tf.add.title,
+  tf.add.familySize,
+  tf.remove.name,
+  tf.na.age.mean)

@@ -99,6 +99,19 @@ tf.add.child <- transformer.create(function(titanic) {
   
   titanic
 })
-
-
-
+tf.add.title <- transformer.create(function(titanic) {
+  titanic$Title <- sapply(titanic$Name, FUN=function(x) {strsplit(x, split = "[,.]")[[1]][2]})
+  titanic$Title <- sub(' ', '', titanic$Title)
+  titanic$Title[titanic$Title %in% c('Mme', 'Mlle')] <- 'Mlle'
+  titanic$Title[titanic$Title %in% c('Capt', 'Don', 'Major', 'Sir')] <- 'Sir'
+  titanic$Title[titanic$Title %in% c('Dona', 'Lady', 'the Countess', 'Jonkheer')] <- 'Lady'
+  titanic$Title[titanic$Title %in% c('Col', 'Lady', 'Dr', 'Jonkheer', 'Master', 'Mlle', 'Ms', 'Rev', "Sir")] <- 'Noble'
+  titanic$Title <- factor(titanic$Title)
+  
+  titanic
+})
+tf.add.familySize <- transformer.create(function(titanic) {
+  titanic$FamilySize <- titanic$SibSp + titanic$Parch + 1
+  
+  titanic
+})
