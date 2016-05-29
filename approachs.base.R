@@ -4,7 +4,7 @@ approach.base <- approach.create(
   tf.remove.ticket,
   tf.remove.passengerId,
   tf.remove.cabin,
-  tf.na.embarked.use.s,
+  tf.na.embarked.use.c,
   tf.na.fare.mean)
 
 approach.caret.base <- approach.create.from(

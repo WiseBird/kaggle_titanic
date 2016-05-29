@@ -1,43 +1,39 @@
-library(mlbench) # install.packages("mlbench")
-data(Sonar)
-str(Sonar[, 1:10])
+library(yaImpute) # install.packages("yaImpute", dependencies = TRUE)
 
-set.seed(998)
-inTraining <- createDataPartition(Sonar$Class, p = .75, list = FALSE)
-training <- Sonar[ inTraining,]
-testing  <- Sonar[-inTraining,]
+data(iris)
+# set the random number seed so that example results are consistent
+# normally, leave out this command
+set.seed(12345)
+# form some test data, s are defined only for reference
+# observations.
+refs=sample(rownames(iris),50)
+x <- iris[,1:2]      # Sepal.Length Sepal.Width
 
-fitControl <- trainControl(## 10-fold CV
-  method = "repeatedcv",
-  number = 10,
-  ## repeated ten times
-  repeats = 10)
+y <- iris[refs,3:4]  # Petal.Length Petal.Width
+# build yai objects using 2 methods
+msn <- yai(x=x,y=y)
+mal <- yai(x=x,y=y,method="mahalanobis")
+# compare these results using the generalized mean distances. mal wins!
+grmsd(mal,msn)
 
-set.seed(825)
-gbmFit1 <- train(Class ~ ., data = training,
-                 method = "gbm",
-                 trControl = fitControl,
-                 ## This last option is actually one
-                 ## for gbm() that passes through
-                 verbose = FALSE,
-                 tuneLength = 5)
-gbmFit1
+predict(mal, iris)
+
+# use projection pursuit and specify ppControl (loads package ccaPP)
+if (require(ccaPP))
+{
+  msnPP <- yai(x=x,y=y,method="msnPP",ppControl=c(method="kendall",search="proj"))
+  grmsd(mal,msnPP,msn)
+}
+
+
+z <- yai(
+  x = split.res$training[, c("Survived"), drop = F], 
+  y = split.res$training[, c("Pclass","Sex","SibSp","Parch","Embarked","Age","Fare")],
+  method = "randomForest")
+predict(z, split.res$training)
 
 
 
-gbmGrid <-  expand.grid(interaction.depth = c(1, 5, 9),
-                        n.trees = (1:30)*50,
-                        shrinkage = 0.1,
-                        n.minobsinnode = 20)
+library(mlr) # install.packages("mlr", dependencies = TRUE)
 
-nrow(gbmGrid)
-
-set.seed(825)
-gbmFit2 <- train(Class ~ ., data = training,
-                 method = "gbm",
-                 trControl = fitControl,
-                 verbose = FALSE,
-                 ## Now specify the exact models 
-                 ## to evaluate:
-                 tuneGrid = gbmGrid)
-gbmFit2
+imp = impute(titanic, target = "Survived", classes = list(integer = imputeMean(), factor = imputeMode()))

@@ -8,6 +8,7 @@ library(plyr)
 library(dplyr) # install.packages("dplyr", dependencies = TRUE)
 library(rattle) # install.packages("rattle", dependencies = TRUE)
 library(C50) # install.packages("C50", dependencies = TRUE)
+library(mice) # install.packages("mice", dependencies = TRUE)
 
 #setwd("D:\\Reps\\gopath\\src\\github.com\\WiseBird\\kaggle_titanic")
 #setwd("C:\\Users\\sergey.sokolov\\Documents\\projects_\\kaggle_titanic")
@@ -137,14 +138,56 @@ create.submit(titanic, "c50.add.title") # 0.75120
 create.submit(titanic, "cforest.add.title.familySize") # 0.79904
 create.submit(titanic, "cforest.add.title") # 0.77990
 
+# Visualizations ------------------------------------------------------------
+
+df <- titanic
+
+# Missing embarkeds has fare = 80
+df[is.na(df$Embarked), c("Name", "Pclass", "Ticket", "Fare")]
+
+# 80 is close to C's median
+ggplot(df, aes(x = Embarked, y = Fare, fill = factor(Pclass))) +
+  geom_boxplot() +
+  geom_hline(aes(yintercept=80), 
+             colour='red', linetype='dashed', lwd=1) +
+  scale_y_continuous()
 
 
 
+# add new feature
+df$Family.Size <- df$SibSp + df$Parch + 1
+
+# looks like families of size 2 to 4 are more survivable
+ggplot(df, aes(x = Family.Size, fill = factor(Survived))) +
+  geom_bar(stat='count', position='dodge') +
+  scale_x_continuous(breaks=seq(max(df$Family.Size))) +
+  labs(x = 'Family Size', fill='Survived')
 
 
 
+# compare how age imputation affects distribution
+compare.age.distribution <- function(age.imputation.func) {
+  age.original = df[!is.na(df$Age), c("Age"), drop = F] %>%
+    mutate(AgeType = "Age (original)")
+  
+  age.imputed = age.imputation.func(df)[is.na(df$Age), c("Age"), drop = F] %>%
+    mutate(AgeType = "Age (imputed)")
+  
+  age.type <- bind_rows(age.original, age.imputed)
+  
+  ggplot(age.type, aes(x = Age)) +
+    geom_density(aes(fill = factor(AgeType)), alpha = 0.6) +
+    #scale_fill_manual(values = c(alpha("green", 0.25), alpha("blue", 0.4))) +
+    labs(x = 'Age', fill = '')
+}
 
+compare.age.distribution(tf.na.age.mean$prepare(df))
+compare.age.distribution(tf.na.age.mean.by.sex$prepare(df))
+compare.age.distribution(tf.na.age.mean.by.sex.and.pclass$prepare(df))
+compare.age.distribution(x)
 
-
+x <- function(df) {
+  complete(mice(df[,c("Pclass","Sex","SibSp","Parch","Embarked","Age","Fare")], method="rf"))
+} 
 
 

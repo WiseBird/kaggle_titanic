@@ -27,8 +27,13 @@ tf.remove.cabin <- transformer.create(function(titanic) {
   titanic$Cabin <- NULL
   titanic
 })
+
 tf.na.embarked.use.s <- transformer.create(function(titanic) {
   titanic$Embarked[is.na(titanic$Embarked)] <- "S"
+  titanic
+})
+tf.na.embarked.use.c <- transformer.create(function(titanic) {
+  titanic$Embarked[is.na(titanic$Embarked)] <- "C"
   titanic
 })
 
@@ -87,6 +92,16 @@ tf.na.age.mean.by.sex.and.pclass <- transformer.create(function(titanic, age.mea
          group_by(Sex, Pclass) %>%
          summarise(avg = mean(Age, na.rm = T)))
 })
+tf.na.age.mice <- transformer.create(function(titanic, age.means) {
+  titanic[is.na(titanic$Age),]$Age <- complete(mice(df[,c("Pclass","Sex","SibSp","Parch","Embarked","Age","Fare")], method="rf"))
+  
+  titanic
+}, function(titanic) {
+  list(titanic %>%
+         group_by(Sex, Pclass) %>%
+         summarise(avg = mean(Age, na.rm = T)))
+})
+
 tf.age.cut.manual <- transformer.create(function(titanic) {
   titanic$Age <- cut(titanic$Age, breaks = c(0,5,16,50,100), labels=c("Infant", "Child", "Adult", "Old"), include.lowest = T)
   
