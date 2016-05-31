@@ -9,7 +9,11 @@ read.titanic <- function(file.name = "train.csv") {
   return(titanic)
 }
 
-
+tf.center.scale <- transformer.create(function(titanic, preProcValues) {
+  predict(preProcValues, titanic)
+}, function(titanic) {
+  list(preProcess(titanic, method = c("center", "scale")))
+})
 
 tf.remove.ticket <- transformer.create(function(titanic) {
   titanic$Ticket <- NULL
@@ -92,14 +96,17 @@ tf.na.age.mean.by.sex.and.pclass <- transformer.create(function(titanic, age.mea
          group_by(Sex, Pclass) %>%
          summarise(avg = mean(Age, na.rm = T)))
 })
-tf.na.age.mice <- transformer.create(function(titanic, age.means) {
-  titanic[is.na(titanic$Age),]$Age <- complete(mice(df[,c("Pclass","Sex","SibSp","Parch","Embarked","Age","Fare")], method="rf"))
-  
+tf.na.age.yai.ica <- transformer.create(function(titanic, ica) {
+  titanic[is.na(titanic$Age),]$Age <- predict(ica, titanic)[is.na(titanic$Age),]$Age
+
   titanic
 }, function(titanic) {
-  list(titanic %>%
-         group_by(Sex, Pclass) %>%
-         summarise(avg = mean(Age, na.rm = T)))
+  rownums <- which(!is.na(titanic$Age))
+  
+  x <- titanic[, c("Fare", "SibSp", "Parch"), drop = F]
+  y <- titanic[rownums, c("Age"), drop = F]
+  
+  list(yai(x = x, y = y, method = "ica"))
 })
 
 tf.age.cut.manual <- transformer.create(function(titanic) {

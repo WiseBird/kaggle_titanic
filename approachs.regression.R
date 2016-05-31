@@ -4,6 +4,7 @@ train.regression <- function(formula, df) {
 
 regression.base <- approach.create.from(
   approach.caret.base,
+  tf.center.scale,
   train.func = function(titanic) {
     train.regression(Survived ~ ., titanic)
   })

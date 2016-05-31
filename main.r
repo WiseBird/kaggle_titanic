@@ -9,6 +9,7 @@ library(dplyr) # install.packages("dplyr", dependencies = TRUE)
 library(rattle) # install.packages("rattle", dependencies = TRUE)
 library(C50) # install.packages("C50", dependencies = TRUE)
 library(mice) # install.packages("mice", dependencies = TRUE)
+library(yaImpute) # install.packages("yaImpute", dependencies = TRUE)
 
 #setwd("D:\\Reps\\gopath\\src\\github.com\\WiseBird\\kaggle_titanic")
 #setwd("C:\\Users\\sergey.sokolov\\Documents\\projects_\\kaggle_titanic")
@@ -102,7 +103,7 @@ score.approach(rpart.age.na.sex.and.pclass)
 score.approach(rpart.age.cut)
 
 
-create.submit(titanic, "regression.simpliest") # 0.76077
+create.submit(titanic, "regression.simpliest") # 0.76077 scale 0.76555
 create.submit(titanic, "regression.age.sex")
 create.submit(titanic, "regression.age.sex.and.pclass")
 create.submit(titanic, "regression.flare.cut.auto")
@@ -111,7 +112,8 @@ create.submit(titanic, "regression.by.sex.and.child") # 0.76555
 create.submit(titanic, "regression.by.sex.and.pclass") # 0.76555
 create.submit(titanic, "regression.by.sex.and.fare") # 0.76077
 create.submit(titanic, "regression.fare.cut.manual.by.sex.and.fare.and.pclass.and.child") # 0.76555
-create.submit(titanic, "regression.add.title") # 0.77512
+create.submit(titanic, "regression.add.title") # 0.77512 scale 0.78947
+create.submit(titanic, "regression.add.title.familySize") # 0.78947
 
 create.submit(titanic, "manual.by.sex.and.fare.and.pclass.and.child") # 0.78469
 create.submit(titanic, "manual.age.cut.manual.by.sex.fare.pclass.age") # 0.77033
@@ -184,10 +186,18 @@ compare.age.distribution <- function(age.imputation.func) {
 compare.age.distribution(tf.na.age.mean$prepare(df))
 compare.age.distribution(tf.na.age.mean.by.sex$prepare(df))
 compare.age.distribution(tf.na.age.mean.by.sex.and.pclass$prepare(df))
-compare.age.distribution(x)
+compare.age.distribution(mice_impute)
+compare.age.distribution(caret_impute)
+compare.age.distribution(tf.na.age.yai.ica$prepare(df))
 
-x <- function(df) {
+mice_impute <- function(df) {
   complete(mice(df[,c("Pclass","Sex","SibSp","Parch","Embarked","Age","Fare")], method="rf"))
 } 
 
+caret_impute <- function(df) {
+  df$Sex = as.integer(df$Sex)
+  df$Pclass = as.integer(df$Pclass)
+  preProcValues_x <- preProcess(df[,c("Sex", "Pclass", "Age", "Fare", "SibSp", "Parch")], method = c("center", "scale", "knnImpute"))
+  predict(preProcValues_x, df[,c("Sex", "Pclass", "Age", "Fare", "SibSp", "Parch")])
+}
 
