@@ -167,6 +167,15 @@ ggplot(df, aes(x = Family.Size, fill = factor(Survived))) +
 
 
 
+# sex is very important
+table(df$Sex, df$Survived)
+
+# title is also
+df <- tf.add.title$prepare(df)(df)
+table(df$Title, df$Survived)
+
+
+
 # compare how age imputation affects distribution
 compare.age.distribution <- function(age.imputation.func) {
   age.original = df[!is.na(df$Age), c("Age"), drop = F] %>%
