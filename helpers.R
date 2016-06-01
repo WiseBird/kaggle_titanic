@@ -65,6 +65,8 @@ approach.create <- function(train.func, predict.func, ..., details.func = NULL) 
       transform(df)
     },
     predict = function(training, testing, ...) {
+      #all.data <- rbind(testing, select(training, -Survived))
+      
       transform <- prepareTransformers(training)
       
       training <- transform(training)

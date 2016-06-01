@@ -19,3 +19,12 @@ cforest.add.title.familySize <- approach.create.from(
   tf.add.familySize,
   tf.remove.name,
   tf.na.age.mean)
+
+cforest.age.cut.fare.cut.add.title.familySize <- approach.create.from(
+  cforest.base,
+  tf.add.title,
+  tf.add.familySize,
+  tf.remove.name,
+  tf.na.age.mean,
+  tf.age.cut.manual,
+  tf.fare.cut.manual)

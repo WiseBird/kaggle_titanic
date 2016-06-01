@@ -12,8 +12,8 @@ library(mice) # install.packages("mice", dependencies = TRUE)
 library(yaImpute) # install.packages("yaImpute", dependencies = TRUE)
 
 #setwd("D:\\Reps\\gopath\\src\\github.com\\WiseBird\\kaggle_titanic")
-#setwd("C:\\Users\\sergey.sokolov\\Documents\\projects_\\kaggle_titanic")
-setwd("D:\\repositories\\ExternalCode\\src\\github.com\\WiseBird\\kaggle_titanic")
+setwd("C:\\Users\\sergey.sokolov\\Documents\\projects_\\kaggle_titanic")
+#setwd("D:\\repositories\\ExternalCode\\src\\github.com\\WiseBird\\kaggle_titanic")
 rm(list = ls())
 cat("\014") 
 
@@ -34,39 +34,24 @@ split.res <- split.test.train(titanic)
 # Analysing/testing -------------------------------------------------------
 
 regression.simpliest$details(split.res$training, split.res$testing)
-regression.by.sex$details(split.res$training, split.res$testing)
-regression.by.sex.and.pclass$details(split.res$training, split.res$testing)
-
 rpart.simpliest$details(split.res$training, split.res$testing)
+c50.simpliest$details(split.res$training, split.res$testing)
+cforest.add.title.familySize$details(split.res$training, split.res$testing)
+cforest.age.cut.fare.cut.add.title.familySize$details(split.res$training, split.res$testing)
+
 rpart.by.sex$details(split.res$training, split.res$testing)
 rpart.overfitted$details(split.res$training, split.res$testing)
 
-c50.simpliest$details(split.res$training, split.res$testing)
-c50.by.sex.pclass.fare.age$details(split.res$training, split.res$testing)
-c50.by.sex.pclass.fare.age.embarked$details(split.res$training, split.res$testing)
+
 
 compare.approaches(titanic,
                    cv.k.folds,
+                   k = 3,
                    stat=calc.kappa,
                    regression.simpliest,
-                   regression.add.title,
-                   regression.add.familySize,
-                   regression.add.title.familySize)
-
-compare.approaches(titanic,
-                   cv.k.folds,
-                   stat=calc.kappa,
-                   rpart.add.title,
-                   rpart.add.title.familySize,
-                   cforest.add.title,
-                   cforest.add.title.familySize)
-
-compare.approaches(titanic,
-                   cv.k.folds,
-                   stat=calc.kappa,
-                   regression.add.title,
-                   rpart.add.title,
-                   c50.add.title)
+                   c50.simpliest,
+                   cforest.add.title.familySize,
+                   cforest.age.cut.fare.cut.add.title.familySize)
 
 
 # Completed approaches ----------------------------------------------------
@@ -137,8 +122,9 @@ create.submit(titanic, "c50.by.sex.pclass.fare.age") # 0.77512
 create.submit(titanic, "c50.by.sex.pclass.fare.age.embarked") # 0.77512
 create.submit(titanic, "c50.add.title") # 0.75120
 
-create.submit(titanic, "cforest.add.title.familySize") # 0.79904
+create.submit(titanic, "cforest.add.title.familySize") # 0.79904 with all data for preprocessing 0.79426
 create.submit(titanic, "cforest.add.title") # 0.77990
+create.submit(titanic, "cforest.age.cut.fare.cut.add.title.familySize") # 0.78469
 
 # Visualizations ------------------------------------------------------------
 
@@ -156,7 +142,32 @@ ggplot(df, aes(x = Embarked, y = Fare, fill = factor(Pclass))) +
 
 
 
-# add new feature
+# important features
+mosaicplot(table(df$Sex, df$Survived),
+           main="Passenger Survival by Family Size",
+           color=c("#fb8072", "#8dd3c7"), cex.axis=1.2)
+
+mosaicplot(table(df$Pclass, df$Survived),
+           main="Passenger Survival by Family Size",
+           color=c("#fb8072", "#8dd3c7"), cex.axis=1.2)
+
+# combine sex and pclass
+ggplot(aes(x=Pclass,y=factor(Sex),color=Survived), data=df) + 
+  geom_jitter() 
+
+df <- tf.add.title$prepare(df)(df)
+mosaicplot(table(df$Title, df$Survived),
+           main="Passenger Survival by Family Size",
+           color=c("#fb8072", "#8dd3c7"), cex.axis=1.2)
+
+# combine sex, pclass and title
+ggplot(aes(x=Pclass,y=factor(Title),color=Survived), data=df) + 
+  geom_jitter() +
+  facet_grid(Sex ~ .)
+
+
+
+# add family size
 df$Family.Size <- df$SibSp + df$Parch + 1
 
 # looks like families of size 2 to 4 are more survivable
@@ -165,14 +176,6 @@ ggplot(df, aes(x = Family.Size, fill = factor(Survived))) +
   scale_x_continuous(breaks=seq(max(df$Family.Size))) +
   labs(x = 'Family Size', fill='Survived')
 
-
-
-# sex is very important
-table(df$Sex, df$Survived)
-
-# title is also
-df <- tf.add.title$prepare(df)(df)
-table(df$Title, df$Survived)
 
 
 
@@ -192,13 +195,6 @@ compare.age.distribution <- function(age.imputation.func) {
     labs(x = 'Age', fill = '')
 }
 
-compare.age.distribution(tf.na.age.mean$prepare(df))
-compare.age.distribution(tf.na.age.mean.by.sex$prepare(df))
-compare.age.distribution(tf.na.age.mean.by.sex.and.pclass$prepare(df))
-compare.age.distribution(mice_impute)
-compare.age.distribution(caret_impute)
-compare.age.distribution(tf.na.age.yai.ica$prepare(df))
-
 mice_impute <- function(df) {
   complete(mice(df[,c("Pclass","Sex","SibSp","Parch","Embarked","Age","Fare")], method="rf"))
 } 
@@ -210,3 +206,17 @@ caret_impute <- function(df) {
   predict(preProcValues_x, df[,c("Sex", "Pclass", "Age", "Fare", "SibSp", "Parch")])
 }
 
+compare.age.distribution(tf.na.age.mean$prepare(df))
+compare.age.distribution(tf.na.age.mean.by.sex$prepare(df))
+compare.age.distribution(tf.na.age.mean.by.sex.and.pclass$prepare(df))
+compare.age.distribution(mice_impute)
+compare.age.distribution(caret_impute)
+compare.age.distribution(tf.na.age.yai.ica$prepare(df))
+
+# https://www.kaggle.com/franperez/titanic/journal
+#
+# combi$Fare.IsZero
+# combi$Fare.PerPersonLog <- combi$Fare.Log / combi$Family.Size
+# deck from ticket
+# people in cabin?
+# combi$Fare.PerTicket <- combi$Fare / combi$Ticket.Count
