@@ -220,3 +220,6 @@ compare.age.distribution(tf.na.age.yai.ica$prepare(df))
 # deck from ticket
 # people in cabin?
 # combi$Fare.PerTicket <- combi$Fare / combi$Ticket.Count
+
+# https://www.kaggle.com/mrisdal/titanic/exploring-survival-on-the-titanic/notebook
+# https://www.kaggle.com/jamiewan/titanic/tryout
